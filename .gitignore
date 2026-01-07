@@ -1,0 +1,61 @@
+# =========================
+# .NET / C#
+# =========================
+bin/
+obj/
+out/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+*.dll
+*.exe
+*.pdb
+*.cache
+*.deps.json
+*.runtimeconfig.json
+
+# =========================
+# AWS Lambda
+# =========================
+aws-lambda-tools-defaults.json.user
+publish/
+.lambda/
+
+# =========================
+# Visual Studio / VS Code
+# =========================
+.vs/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Test Results
+# =========================
+TestResults/
+
+# =========================
+# NuGet
+# =========================
+packages/
+*.nupkg
+.nuget/

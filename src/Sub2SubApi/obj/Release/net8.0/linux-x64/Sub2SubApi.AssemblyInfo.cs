@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sub2SubApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2ed0b4262085b20b313480b81c58f108c441680f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+039a22ae0fdaa99c744a1dd8d83b9b641ae76cb9")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sub2SubApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sub2SubApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
