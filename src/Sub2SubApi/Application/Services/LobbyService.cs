@@ -32,13 +32,15 @@ public sealed class LobbyService : ILobbyService
         {
             var slots = RoleOrder.Select(role =>
             {
-                var bid = topBids.TryGetValue((teamIndex, role), out var b) ? b : 0;
+                var info = topBids.TryGetValue((teamIndex, role), out var i)
+                    ? i
+                    : new LobbyRepository.TopBidInfo(0, null, null);
 
                 return new SlotDto(
                     Role: role,
-                    DisplayName: null,
-                    AvatarUrl: null,
-                    TopBidCredits: bid
+                    DisplayName: info.DisplayName,
+                    AvatarUrl: info.AvatarUrl,
+                    TopBidCredits: info.Credits
                 );
             }).ToArray();
 
@@ -57,7 +59,8 @@ public sealed class LobbyService : ILobbyService
         );
     }
 
-    public async Task<BidResponse> PlaceBidAsync(string lobbyId, BidRequest request, string bidderUserId)
+    public async Task<BidResponse> PlaceBidAsync(string lobbyId, BidRequest request, string bidderUserId,
+        string bidderDisplayName, string? bidderAvatarUrl)
     {
         // Validate basics
         if (request.TeamIndex is < 0 or > 1)
@@ -74,7 +77,9 @@ public sealed class LobbyService : ILobbyService
             request.TeamIndex,
             request.Role,
             request.Amount,
-            bidderUserId
+            bidderUserId,
+            bidderDisplayName,
+            bidderAvatarUrl
         );
 
         // QueuePosition is a placeholder until you implement real queues.

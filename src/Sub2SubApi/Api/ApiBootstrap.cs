@@ -12,7 +12,7 @@ public static class ApiBootstrap
     public static ApiRouter BuildRouter()
     {
         // Replace with real auth later
-        ICurrentUser currentUser = new DevCurrentUser();
+        // ICurrentUser currentUser = new DevCurrentUser();
 
         // DynamoDB client uses Lambda execution role + region from environment by default
         IAmazonDynamoDB ddb = new AmazonDynamoDBClient();
@@ -21,16 +21,16 @@ public static class ApiBootstrap
         var tableName = Environment.GetEnvironmentVariable("DDB_TABLE_NAME");
 
         if (string.IsNullOrWhiteSpace(tableName))
-            throw new InvalidOperationException("Missing env var LOBBY_TABLE_NAME (or TABLE_NAME).");
+            throw new InvalidOperationException("Missing env var DDB_TABLE_NAME.");
 
         // Repo + service
         var repo = new LobbyRepository(ddb, tableName);
         ILobbyService lobbyService = new LobbyService(repo);
 
         var router = new ApiRouter();
-        LobbyEndpoints.Map(router, lobbyService, currentUser);
+        LobbyEndpoints.Map(router, lobbyService);
 
-        // Admin endpoints file can exist now but not mapped until you need it:
+        // Admin endpoints file can exist now but not mapped until need it:
         // AdminLobbyEndpoints.Map(router, ...)
 
         return router;

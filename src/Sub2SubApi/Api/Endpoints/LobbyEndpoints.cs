@@ -9,7 +9,7 @@ public static class LobbyEndpoints
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
-    public static void Map(ApiRouter router, ILobbyService lobbyService, ICurrentUser currentUser)
+    public static void Map(ApiRouter router, ILobbyService lobbyService)
     {
         // GET /lobbies/{lobbyId}
         router.Map("GET", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)", async ctx =>
@@ -46,7 +46,15 @@ public static class LobbyEndpoints
             if (req is null)
                 return HttpResults.BadRequest(new { message = "Invalid bid request" });
 
-            var result = await lobbyService.PlaceBidAsync(lobbyId, req, currentUser.UserId);
+            var user = DevCurrentUser.FromRequest(ctx.Request);
+
+            var result = await lobbyService.PlaceBidAsync(
+                lobbyId,
+                req,
+                user.UserId,
+                user.DisplayName,
+                user.AvatarUrl
+            );
             return HttpResults.Ok(result);
         });
 

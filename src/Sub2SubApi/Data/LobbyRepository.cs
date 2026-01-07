@@ -18,6 +18,12 @@ public sealed class LobbyRepository
     private static string MetaSk() => "META";
     private static string TopBidSk(int teamIndex, string role) => $"TOPBID#{teamIndex}#{role.ToUpperInvariant()}";
 
+    public sealed record TopBidInfo(
+        int Credits,
+        string? DisplayName,
+        string? AvatarUrl
+    );
+
     public async Task<(string TournamentName, string StartsAtIso)?> GetLobbyMetaAsync(string lobbyId)
     {
         var resp = await _ddb.GetItemAsync(new GetItemRequest
@@ -67,7 +73,7 @@ public sealed class LobbyRepository
         return resp.Item.TryGetValue("TopBidCredits", out var v) ? int.Parse(v.N) : 0;
     }
 
-    public async Task<Dictionary<(int TeamIndex, string Role), int>> GetAllTopBidsAsync(string lobbyId)
+    public async Task<Dictionary<(int TeamIndex, string Role), TopBidInfo>> GetAllTopBidsAsync(string lobbyId)
     {
         var resp = await _ddb.QueryAsync(new QueryRequest
         {
@@ -80,7 +86,7 @@ public sealed class LobbyRepository
             }
         });
 
-        var dict = new Dictionary<(int, string), int>();
+        var dict = new Dictionary<(int, string), TopBidInfo>();
 
         foreach (var item in resp.Items)
         {
@@ -91,8 +97,11 @@ public sealed class LobbyRepository
             var teamIndex = int.Parse(parts[1]);
             var role = parts[2];
 
-            var bid = item.TryGetValue("TopBidCredits", out var b) ? int.Parse(b.N) : 0;
-            dict[(teamIndex, role)] = bid;
+            var credits = item.TryGetValue("TopBidCredits", out var b) ? int.Parse(b.N) : 0;
+            var displayName = item.TryGetValue("TopBidderDisplayName", out var dn) ? dn.S : null;
+            var avatarUrl = item.TryGetValue("TopBidderAvatarUrl", out var au) ? au.S : null;
+
+            dict[(teamIndex, role)] = new TopBidInfo(credits, displayName, avatarUrl);
         }
 
         return dict;
@@ -106,7 +115,9 @@ public sealed class LobbyRepository
         int teamIndex,
         string role,
         int amount,
-        string bidderUserId)
+        string bidderUserId,
+        string bidderDisplayName,
+        string? bidderAvatarUrl)
     {
         role = role.ToUpperInvariant();
 
@@ -120,13 +131,18 @@ public sealed class LobbyRepository
                     ["PK"] = new() { S = Pk(lobbyId) },
                     ["SK"] = new() { S = TopBidSk(teamIndex, role) }
                 },
-                UpdateExpression = "SET TopBidCredits = :b, TopBidderUserId = :u, UpdatedAtEpoch = :t",
+                UpdateExpression =
+                    "SET TopBidCredits = :b, TopBidderUserId = :u, TopBidderDisplayName = :dn, UpdatedAtEpoch = :t" +
+                    (string.IsNullOrWhiteSpace(bidderAvatarUrl) ? " REMOVE TopBidderAvatarUrl" : ", TopBidderAvatarUrl = :au"),
                 ConditionExpression = "attribute_not_exists(TopBidCredits) OR TopBidCredits < :b",
                 ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
                     [":b"] = new() { N = amount.ToString() },
                     [":u"] = new() { S = bidderUserId },
-                    [":t"] = new() { N = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() }
+                    [":dn"] = new() { S = bidderDisplayName },
+                    [":t"] = new() { N = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() },
+                    // only used when avatarUrl is provided
+                    [":au"] = new() { S = bidderAvatarUrl ?? "" }
                 }
             });
 
