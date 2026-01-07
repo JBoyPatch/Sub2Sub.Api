@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "j8vtLNeSTr45rCSJCn1c5qETU4i7PgfZZEUIjhOeGmY1ryB1hiGqdPO57ousqib+7rgM4LefMH9yoENzeG/ZBQ==",
+  "dgSpecHash": "r7rHYEry/8U28dJkCFSLZd+vwL7T0u4e66uBKRLGcWK8p+OGCM4AISYKYV3nTNAnYZEVwuOOh2I56Z902heiZQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\JamesPatching\\Repos\\PERSONAL\\Sub2SubApi\\src\\Sub2SubApi\\Sub2SubApi.csproj",
   "expectedPackageFiles": [
@@ -20,6 +20,8 @@
     "C:\\Users\\JamesPatching\\.nuget\\packages\\microsoft.extensions.primitives\\2.1.0\\microsoft.extensions.primitives.2.1.0.nupkg.sha512",
     "C:\\Users\\JamesPatching\\.nuget\\packages\\system.memory\\4.5.0\\system.memory.4.5.0.nupkg.sha512",
     "C:\\Users\\JamesPatching\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\4.5.0\\system.runtime.compilerservices.unsafe.4.5.0.nupkg.sha512",
+    "C:\\Users\\JamesPatching\\.nuget\\packages\\microsoft.netcore.app.runtime.linux-x64\\8.0.3\\microsoft.netcore.app.runtime.linux-x64.8.0.3.nupkg.sha512",
+    "C:\\Users\\JamesPatching\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.linux-x64\\8.0.3\\microsoft.aspnetcore.app.runtime.linux-x64.8.0.3.nupkg.sha512",
     "C:\\Users\\JamesPatching\\.nuget\\packages\\microsoft.netcore.app.crossgen2.win-x64\\8.0.3\\microsoft.netcore.app.crossgen2.win-x64.8.0.3.nupkg.sha512"
   ],
   "logs": []

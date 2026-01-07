@@ -1,0 +1,7 @@
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\bin\Debug\net8.0\.msCoverageSourceRootsMapping_Sub2SubApi.Tests
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.csproj.AssemblyReference.cache
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.AssemblyInfoInputs.cache
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.AssemblyInfo.cs
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.csproj.CoreCompileInputs.cache
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\test\Sub2SubApi.Tests\obj\Debug\net8.0\Sub2SubApi.Tests.sourcelink.json

@@ -10,7 +10,9 @@ public class Function
 {
     private static readonly ApiRouter _router = ApiBootstrap.BuildRouter();
 
-    public async Task<APIGatewayProxyResponse> FunctionHandler(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayHttpApiV2ProxyResponse> FunctionHandler(
+        APIGatewayHttpApiV2ProxyRequest request,
+        ILambdaContext context)
     {
         return await _router.HandleAsync(request, context);
     }

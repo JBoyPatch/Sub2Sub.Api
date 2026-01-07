@@ -15,3 +15,16 @@ C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\obj\Debug\net8.0
 C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\obj\Debug\net8.0\Sub2SubApi.pdb
 C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\obj\Debug\net8.0\Sub2SubApi.genruntimeconfig.cache
 C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\obj\Debug\net8.0\ref\Sub2SubApi.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Amazon.Lambda.APIGatewayEvents.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Amazon.Lambda.Logging.AspNetCore.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\AWSSDK.Core.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\AWSSDK.DynamoDBv2.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Configuration.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Configuration.Binder.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Logging.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
+C:\Users\JamesPatching\Repos\PERSONAL\Sub2SubApi\src\Sub2SubApi\obj\Debug\net8.0\Sub2SubApi.sourcelink.json

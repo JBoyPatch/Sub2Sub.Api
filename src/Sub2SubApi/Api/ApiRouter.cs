@@ -8,15 +8,23 @@ public sealed class ApiRouter
 {
     private readonly List<Route> _routes = new();
 
-    public void Map(string method, string pattern, Func<RouteContext, Task<APIGatewayProxyResponse>> handler)
+    public void Map(
+        string method,
+        string pattern,
+        Func<RouteContext, Task<APIGatewayHttpApiV2ProxyResponse>> handler)
     {
-        _routes.Add(new Route(method.ToUpperInvariant(), new Regex($"^{pattern}$", RegexOptions.Compiled), handler));
+        _routes.Add(new Route(
+            method.ToUpperInvariant(),
+            new Regex($"^{pattern}$", RegexOptions.Compiled),
+            handler));
     }
 
-    public async Task<APIGatewayProxyResponse> HandleAsync(APIGatewayProxyRequest request, ILambdaContext context)
+    public async Task<APIGatewayHttpApiV2ProxyResponse> HandleAsync(
+        APIGatewayHttpApiV2ProxyRequest request,
+        ILambdaContext context)
     {
-        var method = (request.HttpMethod ?? "GET").ToUpperInvariant();
-        var path = request.Path ?? "/";
+        var method = (request.RequestContext?.Http?.Method ?? "GET").ToUpperInvariant();
+        var path = request.RawPath ?? "/";
 
         foreach (var route in _routes)
         {
@@ -39,20 +47,23 @@ public sealed class ApiRouter
     private sealed record Route(
         string Method,
         Regex PathRegex,
-        Func<RouteContext, Task<APIGatewayProxyResponse>> Handler
+        Func<RouteContext, Task<APIGatewayHttpApiV2ProxyResponse>> Handler
     );
 }
 
 public sealed class RouteContext
 {
-    public RouteContext(APIGatewayProxyRequest request, ILambdaContext lambda, Dictionary<string, string> routeParams)
+    public RouteContext(
+        APIGatewayHttpApiV2ProxyRequest request,
+        ILambdaContext lambda,
+        Dictionary<string, string> routeParams)
     {
         Request = request;
         Lambda = lambda;
         RouteParams = routeParams;
     }
 
-    public APIGatewayProxyRequest Request { get; }
+    public APIGatewayHttpApiV2ProxyRequest Request { get; }
     public ILambdaContext Lambda { get; }
     public Dictionary<string, string> RouteParams { get; }
 
