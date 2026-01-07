@@ -1,48 +1,92 @@
 using Sub2SubApi.Application.Models;
+using Sub2SubApi.Application.Services;
+using Sub2SubApi.Data;
 
-namespace Sub2SubApi.Application.Services;
+namespace Sub2SubApi.Application;
 
 public sealed class LobbyService : ILobbyService
 {
-    public Task<LobbyDto> GetLobbyAsync(string lobbyId, string userId)
+    private readonly LobbyRepository _repo;
+
+    private static readonly string[] RoleOrder = ["TOP", "JUNGLE", "MID", "ADC", "SUPPORT"];
+
+    public LobbyService(LobbyRepository repo)
     {
-        var now = DateTimeOffset.UtcNow;
-        var startsAt = now.AddMinutes(2);
+        _repo = repo;
+    }
 
-        var roles = new[] { "TOP", "JUNGLE", "MID", "ADC", "SUPPORT" };
+    public async Task<LobbyDto> GetLobbyAsync(string lobbyId)
+    {
+        // If lobby doesn't exist yet, create a default "implicit" lobby.
+        var meta = await _repo.GetLobbyMetaAsync(lobbyId);
+        if (meta is null)
+        {
+            var startsAtIso = DateTimeOffset.UtcNow.AddMinutes(5).ToString("O");
+            await _repo.PutLobbyMetaAsync(lobbyId, "Bronze War", startsAtIso);
+            meta = ("Bronze War", startsAtIso);
+        }
 
-        TeamDto MakeTeam(string name) =>
-            new(name, roles.Select(r => new SlotDto(r, null, null, TopBidCredits: r == "TOP" ? 10 : 0)).ToArray());
+        var topBids = await _repo.GetAllTopBidsAsync(lobbyId);
 
-        return Task.FromResult(new LobbyDto(
+        TeamDto BuildTeam(int teamIndex, string name)
+        {
+            var slots = RoleOrder.Select(role =>
+            {
+                var bid = topBids.TryGetValue((teamIndex, role), out var b) ? b : 0;
+
+                return new SlotDto(
+                    Role: role,
+                    DisplayName: null,
+                    AvatarUrl: null,
+                    TopBidCredits: bid
+                );
+            }).ToArray();
+
+            return new TeamDto(name, slots);
+        }
+
+        return new LobbyDto(
             LobbyId: lobbyId,
-            TournamentName: "Bronze War",
-            StartsAtIso: startsAt.ToString("O"),
-            Teams: new[] { MakeTeam("Team A"), MakeTeam("Team B") }
-        ));
+            TournamentName: meta.Value.TournamentName,
+            StartsAtIso: meta.Value.StartsAtIso,
+            Teams: new[]
+            {
+                BuildTeam(0, "Team A"),
+                BuildTeam(1, "Team B"),
+            }
+        );
     }
 
-    public Task<BidResponse> PlaceBidAsync(string lobbyId, string userId, BidRequest request)
+    public async Task<BidResponse> PlaceBidAsync(string lobbyId, BidRequest request, string bidderUserId)
     {
-        // Stub: accept any bid >= 1, pretend you became top bidder if amount >= 10
-        var accepted = request.Amount >= 1;
-        var didBecomeTop = request.Amount >= 10;
+        // Validate basics
+        if (request.TeamIndex is < 0 or > 1)
+            return new BidResponse(false, false, 0, 0);
 
-        return Task.FromResult(new BidResponse(
+        if (string.IsNullOrWhiteSpace(request.Role))
+            return new BidResponse(false, false, 0, 0);
+
+        if (request.Amount <= 0)
+            return new BidResponse(false, false, 0, 0);
+
+        var (accepted, currentTop) = await _repo.TryPlaceTopBidAsync(
+            lobbyId,
+            request.TeamIndex,
+            request.Role,
+            request.Amount,
+            bidderUserId
+        );
+
+        // QueuePosition is a placeholder until you implement real queues.
+        var queuePos = accepted ? 1 : 3;
+
+        return new BidResponse(
             Accepted: accepted,
-            DidBecomeTopBidder: didBecomeTop,
-            CurrentTopBidCredits: Math.Max(10, request.Amount),
-            QueuePosition: 3
-        ));
+            DidBecomeTopBidder: accepted,
+            CurrentTopBidCredits: currentTop,
+            QueuePosition: queuePos
+        );
     }
 
-    public Task<MatchResultDto> GetMatchResultAsync(string lobbyId, string userId)
-    {
-        // Stub: pretend user wins TOP with a demo code
-        return Task.FromResult(new MatchResultDto(
-            DidWin: true,
-            WonRole: "TOP",
-            MatchCode: "DEMO-ABCD-1234"
-        ));
-    }
+    // public Task<MatchResultDto> GetMatchResultAsync(string lobbyId, string userId){}
 }

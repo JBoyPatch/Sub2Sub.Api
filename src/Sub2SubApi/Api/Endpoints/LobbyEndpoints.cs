@@ -14,17 +14,24 @@ public static class LobbyEndpoints
         // GET /lobbies/{lobbyId}
         router.Map("GET", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)", async ctx =>
         {
-            var lobbyId = ctx.GetRouteParam("lobbyId")!;
-            var lobby = await lobbyService.GetLobbyAsync(lobbyId, currentUser.UserId);
+            var lobbyId = ctx.GetRouteParam("lobbyId");
+            if (string.IsNullOrWhiteSpace(lobbyId))
+                return HttpResults.BadRequest(new { message = "LobbyId required" });
 
+            var lobby = await lobbyService.GetLobbyAsync(lobbyId);
             return HttpResults.Ok(lobby);
         });
 
         // POST /lobbies/{lobbyId}/bids
         router.Map("POST", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)/bids", async ctx =>
         {
-            var lobbyId = ctx.GetRouteParam("lobbyId")!;
-            var body = ctx.Request.Body ?? "";
+            var lobbyId = ctx.GetRouteParam("lobbyId");
+            if (string.IsNullOrWhiteSpace(lobbyId))
+                return HttpResults.BadRequest(new { message = "LobbyId required" });
+
+            var body = ctx.Request.Body;
+            if (string.IsNullOrWhiteSpace(body))
+                return HttpResults.BadRequest(new { message = "Body required" });
 
             BidRequest? req;
             try
@@ -37,20 +44,20 @@ public static class LobbyEndpoints
             }
 
             if (req is null)
-                return HttpResults.BadRequest(new { message = "Body required" });
+                return HttpResults.BadRequest(new { message = "Invalid bid request" });
 
-            var result = await lobbyService.PlaceBidAsync(lobbyId, currentUser.UserId, req);
+            var result = await lobbyService.PlaceBidAsync(lobbyId, req, currentUser.UserId);
             return HttpResults.Ok(result);
         });
 
         // GET /lobbies/{lobbyId}/result
-        router.Map("GET", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)/result", async ctx =>
-        {
-            var lobbyId = ctx.GetRouteParam("lobbyId")!;
-            var result = await lobbyService.GetMatchResultAsync(lobbyId, currentUser.UserId);
+        // router.Map("GET", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)/result", async ctx =>
+        // {
+        //     var lobbyId = ctx.GetRouteParam("lobbyId")!;
+        //     var result = await lobbyService.GetMatchResultAsync(lobbyId, currentUser.UserId);
 
-            return HttpResults.Ok(result);
-        });
+        //     return HttpResults.Ok(result);
+        // });
 
         // OPTIONS - CORS preflight (simple catch-all)
         router.Map("OPTIONS", "/.*", _ =>

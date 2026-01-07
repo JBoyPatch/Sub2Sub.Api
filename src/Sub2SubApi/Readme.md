@@ -47,3 +47,56 @@ Deploy function to AWS Lambda
     cd "Sub2SubApi/src/Sub2SubApi"
     dotnet lambda deploy-function
 ```
+
+
+Dynamo DB structure
+```
+Item Shape #1 — Lobby metadata (1 item per lobby)
+
+Keys
+PK = LOBBY#test-lobby
+SK = META
+
+Attributes
+{
+  "PK": "LOBBY#test-lobby",
+  "SK": "META",
+  "TournamentName": "Bronze War",
+  "StartsAtIso": "2026-01-06T21:00:00Z",
+  "Status": "OPEN"
+}
+
+
+Item Shape #2 — Top bid per team + role 
+
+Keys
+PK = LOBBY#test-lobby
+SK = TOPBID#0#TOP
+
+Attributes
+{
+  "PK": "LOBBY#test-lobby",
+  "SK": "TOPBID#0#TOP",
+  "TopBidCredits": 120,
+  "TopBidderUserId": "user-123",
+  "UpdatedAtEpoch": 1736205600
+}
+
+
+Item Shape #3 — (Future) Role assignment / winner
+
+Keys
+PK = LOBBY#test-lobby
+SK = ASSIGN#0#TOP
+
+Attributes
+{
+  "PK": "LOBBY#test-lobby",
+  "SK": "ASSIGN#0#TOP",
+  "UserId": "user-123",
+  "DisplayName": "OptimalLulz",
+  "AvatarUrl": "https://...",
+  "MatchCode": "ABCD-1234"
+}
+
+```
