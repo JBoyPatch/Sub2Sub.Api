@@ -38,12 +38,14 @@ public static class AuthEndpoints
                 PasswordHash = req.PasswordHash,
                 AvatarUrl = null,
                 Credits = 0
+                ,
+                Type = "User"
             };
 
             var ok = await authService.CreateUserAsync(user);
             if (!ok) return HttpResults.BadRequest(new { message = "User already exists" });
 
-            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits });
+            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
         });
 
         // POST /auth/login
@@ -69,7 +71,7 @@ public static class AuthEndpoints
             var user = await authService.AuthenticateAsync(req.Username, req.PasswordHash);
             if (user is null) return HttpResults.BadRequest(new { message = "Invalid credentials" });
 
-            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits });
+            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
         });
     }
 }

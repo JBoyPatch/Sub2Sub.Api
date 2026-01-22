@@ -12,4 +12,6 @@ public sealed class UserDto
     public string? AvatarUrl { get; init; }
     // Credits balance
     public int Credits { get; init; }
+    // User type (e.g. "User", "Admin")
+    public required string Type { get; init; }
 }

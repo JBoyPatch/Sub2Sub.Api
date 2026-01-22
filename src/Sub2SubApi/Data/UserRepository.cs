@@ -37,6 +37,7 @@ public sealed class UserRepository
         var hash = resp.Item.TryGetValue("PasswordHash", out var p) ? p.S : string.Empty;
         var avatar = resp.Item.TryGetValue("AvatarUrl", out var a) ? a.S : null;
         var credits = resp.Item.TryGetValue("Credits", out var c) ? int.Parse(c.N) : 0;
+        var type = resp.Item.TryGetValue("Type", out var t) ? t.S : "User";
 
         return new UserDto
         {
@@ -45,7 +46,8 @@ public sealed class UserRepository
             Email = email ?? string.Empty,
             PasswordHash = hash ?? string.Empty,
             AvatarUrl = avatar,
-            Credits = credits
+            Credits = credits,
+            Type = type ?? "User"
         };
     }
 
@@ -67,6 +69,7 @@ public sealed class UserRepository
                 ["PasswordHash"] = new() { S = user.PasswordHash },
                 ["AvatarUrl"] = new() { S = user.AvatarUrl ?? string.Empty },
                 ["Credits"] = new() { N = user.Credits.ToString() },
+                ["Type"] = new() { S = user.Type ?? "User" },
                 ["CreatedAtEpoch"] = new() { N = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString() }
             },
             ConditionExpression = "attribute_not_exists(PK)"
