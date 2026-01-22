@@ -26,6 +26,13 @@ public sealed class ApiRouter
         var method = (request.RequestContext?.Http?.Method ?? "GET").ToUpperInvariant();
         var path = request.RawPath ?? "/";
 
+        // API Gateway HTTP APIs sometimes include the stage in RawPath (eg "/$default/...").
+        // Strip the common "$default" stage so routes registered without the stage still match.
+        if (path.StartsWith("/$default/", StringComparison.Ordinal))
+            path = path.Substring("/$default".Length);
+        else if (string.Equals(path, "/*$default", StringComparison.Ordinal))
+            path = "/";
+
         foreach (var route in _routes)
         {
             if (route.Method != method) continue;
