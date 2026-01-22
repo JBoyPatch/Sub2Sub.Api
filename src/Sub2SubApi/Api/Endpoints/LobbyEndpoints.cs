@@ -22,6 +22,38 @@ public static class LobbyEndpoints
             return HttpResults.Ok(lobby);
         });
 
+        // POST /lobbies - create a new lobby (admin)
+        router.Map("POST", "/lobbies", async ctx =>
+        {
+            var body = ctx.Request.Body;
+            if (string.IsNullOrWhiteSpace(body))
+                return HttpResults.BadRequest(new { message = "Body required" });
+
+            CreateLobbyRequest? req;
+            try
+            {
+                req = JsonSerializer.Deserialize<CreateLobbyRequest>(body, JsonOptions);
+            }
+            catch
+            {
+                return HttpResults.BadRequest(new { message = "Invalid JSON body" });
+            }
+
+            if (req is null)
+                return HttpResults.BadRequest(new { message = "Invalid create request" });
+
+            var lobbyId = req.LobbyId ?? string.Empty;
+            var tournamentName = req.TournamentName ?? string.Empty;
+            var startsAtIso = req.StartsAtIso ?? string.Empty;
+
+            var createdId = await lobbyService.CreateLobbyAsync(lobbyId, tournamentName, startsAtIso);
+            if (createdId is null)
+                return HttpResults.Json(409, new { message = "Lobby already exists" });
+
+            var lobby = await lobbyService.GetLobbyAsync(createdId);
+            return HttpResults.Ok(lobby);
+        });
+
         // POST /lobbies/{lobbyId}/bids
         router.Map("POST", "/lobbies/(?<lobbyId>[A-Za-z0-9_-]+)/bids", async ctx =>
         {

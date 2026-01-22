@@ -59,6 +59,29 @@ public sealed class LobbyService : ILobbyService
         );
     }
 
+    public async Task<string> CreateLobbyAsync(string lobbyId, string tournamentName, string startsAtIso)
+    {
+        if (string.IsNullOrWhiteSpace(lobbyId))
+            lobbyId = Guid.NewGuid().ToString();
+
+        if (string.IsNullOrWhiteSpace(tournamentName))
+            tournamentName = "New Lobby";
+
+        if (string.IsNullOrWhiteSpace(startsAtIso))
+            startsAtIso = DateTimeOffset.UtcNow.AddMinutes(5).ToString("O");
+
+        // If caller supplied a lobbyId, reject if it already exists.
+        if (!string.IsNullOrWhiteSpace(lobbyId))
+        {
+            var existing = await _repo.GetLobbyMetaAsync(lobbyId);
+            if (existing is not null)
+                return null; // indicate already exists
+        }
+
+        await _repo.PutLobbyMetaAsync(lobbyId, tournamentName, startsAtIso);
+        return lobbyId;
+    }
+
     public async Task<BidResponse> PlaceBidAsync(string lobbyId, BidRequest request, string bidderUserId,
         string bidderDisplayName, string? bidderAvatarUrl)
     {
