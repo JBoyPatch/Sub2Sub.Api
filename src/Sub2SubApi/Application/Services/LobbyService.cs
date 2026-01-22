@@ -21,7 +21,7 @@ public sealed class LobbyService : ILobbyService
         var meta = await _repo.GetLobbyMetaAsync(lobbyId);
         if (meta is null)
         {
-            var startsAtIso = DateTimeOffset.UtcNow.AddMinutes(5).ToString("O");
+            var startsAtIso = DateTimeOffset.UtcNow.AddMinutes(2).ToString("O");
             await _repo.PutLobbyMetaAsync(lobbyId, "Bronze War", startsAtIso);
             meta = ("Bronze War", startsAtIso);
         }
