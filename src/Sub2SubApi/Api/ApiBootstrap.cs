@@ -23,12 +23,21 @@ public static class ApiBootstrap
         if (string.IsNullOrWhiteSpace(tableName))
             throw new InvalidOperationException("Missing env var DDB_TABLE_NAME.");
 
-        // Repo + service
+        // Repo + service for lobbies
         var repo = new LobbyRepository(ddb, tableName);
         ILobbyService lobbyService = new LobbyService(repo);
 
+        // Users table for auth (required)
+        var usersTable = Environment.GetEnvironmentVariable("DDB_USERS_TABLE_NAME");
+        if (string.IsNullOrWhiteSpace(usersTable))
+            throw new InvalidOperationException("Missing env var DDB_USERS_TABLE_NAME.");
+
+        var userRepo = new UserRepository(ddb, usersTable);
+        IAuthService authService = new Application.Services.AuthService(userRepo);
+
         var router = new ApiRouter();
         LobbyEndpoints.Map(router, lobbyService);
+        AuthEndpoints.Map(router, authService);
 
         // Admin endpoints file can exist now but not mapped until need it:
         // AdminLobbyEndpoints.Map(router, ...)

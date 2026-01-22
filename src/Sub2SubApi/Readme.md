@@ -49,7 +49,7 @@ Deploy function to AWS Lambda
 ```
 
 
-Dynamo DB structure
+Lobby Dynamo DB structure
 ```
 Item Shape #1 — Lobby metadata (1 item per lobby)
 
@@ -97,6 +97,23 @@ Attributes
   "DisplayName": "OptimalLulz",
   "AvatarUrl": "https://...",
   "MatchCode": "ABCD-1234"
+}
+
+```
+
+User Dynamo DB structure
+```
+Attributes
+{
+  "PK": {"S":"USER#alice"},
+  "SK": {"S":"META"},
+  "Id": {"S":"d8f1a9d3-..."},
+  "Username": {"S":"alice"},
+  "Email": {"S":"alice@example.com"},
+  "PasswordHash": {"S":"<client-provided-hash>"},
+  "AvatarUrl": {"S":""},
+  "Credits": {"N":"0"},
+  "CreatedAtEpoch": {"N":"167xyz..."}
 }
 
 ```
