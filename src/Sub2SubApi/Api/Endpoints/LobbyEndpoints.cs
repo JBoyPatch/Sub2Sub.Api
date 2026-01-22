@@ -22,6 +22,13 @@ public static class LobbyEndpoints
             return HttpResults.Ok(lobby);
         });
 
+        // GET /lobbies - list active lobbies
+        router.Map("GET", "/lobbies", async ctx =>
+        {
+            var lobbies = await lobbyService.ListLobbiesAsync();
+            return HttpResults.Ok(lobbies);
+        });
+
         // POST /lobbies - create a new lobby (admin)
         router.Map("POST", "/lobbies", async ctx =>
         {

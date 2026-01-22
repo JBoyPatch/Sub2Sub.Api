@@ -59,7 +59,7 @@ public sealed class LobbyService : ILobbyService
         );
     }
 
-    public async Task<string> CreateLobbyAsync(string lobbyId, string tournamentName, string startsAtIso)
+    public async Task<string?> CreateLobbyAsync(string lobbyId, string tournamentName, string startsAtIso)
     {
         if (string.IsNullOrWhiteSpace(lobbyId))
             lobbyId = Guid.NewGuid().ToString();
@@ -80,6 +80,14 @@ public sealed class LobbyService : ILobbyService
 
         await _repo.PutLobbyMetaAsync(lobbyId, tournamentName, startsAtIso);
         return lobbyId;
+    }
+
+    public async Task<IEnumerable<LobbyDto>> ListLobbiesAsync()
+    {
+        var ids = await _repo.GetAllLobbyIdsAsync();
+        var tasks = ids.Select(id => GetLobbyAsync(id));
+        var results = await Task.WhenAll(tasks);
+        return results;
     }
 
     public async Task<BidResponse> PlaceBidAsync(string lobbyId, BidRequest request, string bidderUserId,

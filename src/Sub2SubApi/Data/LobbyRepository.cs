@@ -44,7 +44,7 @@ public sealed class LobbyRepository
         return (name, starts);
     }
 
-    public Task PutLobbyMetaAsync(string lobbyId, string tournamentName, string startsAtIso) =>
+    public Task PutLobbyMetaAsync(string lobbyId, string tournamentName, string startsAtIso, bool active = true) =>
         _ddb.PutItemAsync(new PutItemRequest
         {
             TableName = _tableName,
@@ -53,7 +53,8 @@ public sealed class LobbyRepository
                 ["PK"] = new() { S = Pk(lobbyId) },
                 ["SK"] = new() { S = MetaSk() },
                 ["TournamentName"] = new() { S = tournamentName },
-                ["StartsAtIso"] = new() { S = startsAtIso }
+                ["StartsAtIso"] = new() { S = startsAtIso },
+                ["Active"] = new() { BOOL = active }
             }
         });
 
@@ -105,6 +106,34 @@ public sealed class LobbyRepository
         }
 
         return dict;
+    }
+
+    /// <summary>
+    /// Return all lobby ids that have a META item.
+    /// This performs a Scan with a filter; acceptable for low-volume lists.
+    /// </summary>
+    public async Task<string[]> GetAllLobbyIdsAsync()
+    {
+        var resp = await _ddb.ScanAsync(new ScanRequest
+        {
+            TableName = _tableName,
+            FilterExpression = "SK = :meta AND begins_with(PK, :prefix) AND Active = :active",
+            ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+            {
+                [":meta"] = new() { S = MetaSk() },
+                [":prefix"] = new() { S = "LOBBY#" },
+                [":active"] = new() { BOOL = true }
+            },
+            ProjectionExpression = "PK"
+        });
+
+        var ids = resp.Items
+            .Where(i => i.TryGetValue("PK", out var pk) && pk.S is not null)
+            .Select(i => i["PK"].S!)
+            .Select(pk => pk.StartsWith("LOBBY#") ? pk.Substring("LOBBY#".Length) : pk)
+            .ToArray();
+
+        return ids;
     }
 
     /// <summary>
