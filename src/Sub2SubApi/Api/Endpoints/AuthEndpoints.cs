@@ -45,7 +45,7 @@ public static class AuthEndpoints
             var ok = await authService.CreateUserAsync(user);
             if (!ok) return HttpResults.BadRequest(new { message = "User already exists" });
 
-            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
+            return HttpResults.Ok(new AuthResponse { Ok = true, Id = user.Id, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
         });
 
         // POST /auth/login
@@ -71,7 +71,33 @@ public static class AuthEndpoints
             var user = await authService.AuthenticateAsync(req.Username, req.PasswordHash);
             if (user is null) return HttpResults.BadRequest(new { message = "Invalid credentials" });
 
-            return HttpResults.Ok(new AuthResponse { Ok = true, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
+            return HttpResults.Ok(new AuthResponse { Ok = true, Id = user.Id, Username = user.Username, Email = user.Email, AvatarUrl = user.AvatarUrl, Credits = user.Credits, Type = user.Type });
         });
+
+        // PATCH /users/{userId} - partial user update (supports avatarUrl)
+        router.Map("PATCH", "/users/(?<userId>[A-Za-z0-9_-]+)", async ctx =>
+        {
+            var userId = ctx.GetRouteParam("userId");
+            if (string.IsNullOrWhiteSpace(userId)) return HttpResults.BadRequest(new { message = "userId required" });
+
+            var body = ctx.Request.Body;
+            if (string.IsNullOrWhiteSpace(body)) return HttpResults.BadRequest(new { message = "Body required" });
+
+            UpdateUserRequest? req;
+            try { req = JsonSerializer.Deserialize<UpdateUserRequest>(body, JsonOptions); }
+            catch { return HttpResults.BadRequest(new { message = "Invalid JSON body" }); }
+
+            if (req is null) return HttpResults.BadRequest(new { message = "Invalid request" });
+
+            var ok = await authService.UpdateAvatarUrlAsync(userId, req.AvatarUrl);
+            if (!ok) return HttpResults.NotFound(new { message = "User not found" });
+
+            return HttpResults.Ok(new { ok = true, AvatarUrl = req.AvatarUrl });
+        });
+    }
+
+    private sealed class UpdateUserRequest
+    {
+        public string? AvatarUrl { get; set; }
     }
 }

@@ -12,4 +12,7 @@ public interface IRiotService
     Task SyncMatchesAsync(string userId, int count = 20);
     Task SyncAllAsync(string userId);
     Task<RiotProfileDto?> GetProfileAsync(string userId, int recentMatches = 10);
+    Task<IEnumerable<UserRankedStatsDto>> GetRankedAsync(string userId);
+    Task<IEnumerable<UserChampionMasteryDto>> GetChampionMasteryAsync(string userId, int topN = 0);
+    Task<IEnumerable<UserMatchStatsDto>> GetMatchesAsync(string userId, int count = 20);
 }

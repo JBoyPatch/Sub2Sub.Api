@@ -80,6 +80,59 @@ public sealed class MatchRepository
         });
     }
 
+    public async Task<List<UserMatchStatsDto>> ListUserMatchStatsAsync(string userId, int count = 20)
+    {
+        var resp = await _ddb.QueryAsync(new QueryRequest
+        {
+            TableName = _tableName,
+            KeyConditionExpression = "PK = :pk AND begins_with(SK, :sk)",
+            ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+            {
+                [":pk"] = new() { S = UserPk(userId) },
+                [":sk"] = new() { S = "MATCH#" }
+            },
+            Limit = count
+        });
+
+        var list = new List<UserMatchStatsDto>();
+        foreach (var item in resp.Items)
+        {
+            var matchId = item.TryGetValue("MatchId", out var mid) ? mid.S ?? string.Empty : string.Empty;
+            var champId = item.TryGetValue("ChampionId", out var ci) && int.TryParse(ci.N, out var civ) ? civ : 0;
+            var champName = item.TryGetValue("ChampionName", out var cn) ? cn.S ?? string.Empty : string.Empty;
+            var kills = item.TryGetValue("Kills", out var k) && int.TryParse(k.N, out var kv) ? kv : 0;
+            var deaths = item.TryGetValue("Deaths", out var d) && int.TryParse(d.N, out var dv) ? dv : 0;
+            var assists = item.TryGetValue("Assists", out var a) && int.TryParse(a.N, out var av) ? av : 0;
+            var cs = item.TryGetValue("CreepScore", out var csn) && int.TryParse(csn.N, out var csv) ? csv : 0;
+            var gold = item.TryGetValue("GoldEarned", out var g) && int.TryParse(g.N, out var gv) ? gv : 0;
+            var dmg = item.TryGetValue("DamageToChampions", out var dm) && long.TryParse(dm.N, out var dmv) ? dmv : 0L;
+            var vision = item.TryGetValue("VisionScore", out var vs) && int.TryParse(vs.N, out var vsv) ? vsv : 0;
+            var win = item.TryGetValue("Win", out var w) ? w.BOOL : false;
+            var queue = item.TryGetValue("QueueId", out var q) && int.TryParse(q.N, out var qv) ? qv : 0;
+            var recorded = item.TryGetValue("RecordedAtEpoch", out var r) && long.TryParse(r.N, out var rv) ? rv : 0L;
+
+            list.Add(new UserMatchStatsDto
+            {
+                UserId = userId,
+                MatchId = matchId,
+                ChampionId = champId,
+                ChampionName = champName,
+                Kills = kills,
+                Deaths = deaths,
+                Assists = assists,
+                CreepScore = cs,
+                GoldEarned = gold,
+                DamageToChampions = dmg,
+                VisionScore = vision,
+                Win = win,
+                QueueId = queue,
+                RecordedAtEpoch = recorded
+            });
+        }
+
+        return list;
+    }
+
     public async Task<bool> ExistsUserMatchAsync(string userId, string matchId)
     {
         var resp = await _ddb.GetItemAsync(new GetItemRequest

@@ -29,11 +29,18 @@ public sealed class RiotApiClient : IRiotApiClient
         // Riot expects API key in X-Riot-Token header
         if (!_http.DefaultRequestHeaders.Contains("X-Riot-Token"))
             _http.DefaultRequestHeaders.Add("X-Riot-Token", _apiKey);
+
+        // Log masked info for debugging (do NOT print the key itself)
+        try
+        {
+            Console.WriteLine($"RiotApiClient initialized. platform={_platformBase} regional={_regionalBase} keyLength={_apiKey?.Length ?? 0}");
+        }
+        catch { /* best-effort logging */ }
     }
 
     public async Task<RiotAccountDto?> GetAccountByRiotIdAsync(string gameName, string tagLine)
     {
-        var url = $"{_platformBase}/riot/account/v1/accounts/by-riot-id/{Uri.EscapeDataString(gameName)}/{Uri.EscapeDataString(tagLine)}";
+        var url = $"{_regionalBase}/riot/account/v1/accounts/by-riot-id/{Uri.EscapeDataString(gameName)}/{Uri.EscapeDataString(tagLine)}";
         var (status, body) = await GetStringWithRetriesAsync(url);
         if (status == 404) return null;
         if (status >= 200 && status < 300)
@@ -50,7 +57,8 @@ public sealed class RiotApiClient : IRiotApiClient
             }
         }
 
-        throw new Exception($"Riot API returned status {status} for account lookup");
+        var snippet = body is null ? string.Empty : (body.Length > 500 ? body.Substring(0, 500) : body);
+        throw new Exception($"Riot API returned status {status} for account lookup. Response: {snippet}");
     }
 
     public async Task<RiotSummonerDto?> GetSummonerByPuuidAsync(string puuid)
@@ -63,9 +71,14 @@ public sealed class RiotApiClient : IRiotApiClient
             try
             {
                 using var doc = JsonDocument.Parse(body);
-                var id = doc.RootElement.GetProperty("id").GetString() ?? string.Empty;
-                var icon = doc.RootElement.GetProperty("profileIconId").GetInt32();
-                var level = doc.RootElement.GetProperty("summonerLevel").GetInt64();
+                var root = doc.RootElement;
+
+                // `id` (encrypted summoner id) may be missing in some responses; treat it as optional.
+                var id = root.TryGetProperty("id", out var idEl) ? idEl.GetString() ?? string.Empty : string.Empty;
+
+                var icon = root.TryGetProperty("profileIconId", out var iconEl) && iconEl.ValueKind != JsonValueKind.Null ? iconEl.GetInt32() : 0;
+                var level = root.TryGetProperty("summonerLevel", out var levelEl) && levelEl.ValueKind != JsonValueKind.Null ? levelEl.GetInt64() : 0L;
+
                 return new RiotSummonerDto { SummonerId = id, ProfileIconId = icon, SummonerLevel = level };
             }
             catch (Exception ex)
@@ -190,6 +203,11 @@ public sealed class RiotApiClient : IRiotApiClient
             attempts++;
             using var req = new HttpRequestMessage(HttpMethod.Get, url);
             req.Headers.Accept.ParseAdd("application/json");
+            // Ensure API key and a User-Agent are present on every request (some environments strip default headers)
+            if (!req.Headers.Contains("X-Riot-Token") && !string.IsNullOrWhiteSpace(_apiKey))
+                req.Headers.Add("X-Riot-Token", _apiKey);
+            if (!req.Headers.Contains("User-Agent"))
+                req.Headers.Add("User-Agent", "Sub2SubApi/1.0");
             try
             {
                 var resp = await _http.SendAsync(req);

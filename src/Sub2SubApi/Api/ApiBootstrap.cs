@@ -53,7 +53,7 @@ public static class ApiBootstrap
         var matchRepo = new MatchRepository(ddb, tableName);
         IRiotService riotService = new RiotService(riotClient, userRiotRepo, matchRepo);
 
-        RiotEndpoints.Map(router, riotService);
+        RiotEndpoints.Map(router, riotService, authService);
 
         // Admin endpoints file can exist now but not mapped until need it:
         // AdminLobbyEndpoints.Map(router, ...)

@@ -75,4 +75,94 @@ public sealed class UserRepository
             ConditionExpression = "attribute_not_exists(PK)"
         });
     }
+
+    public async Task<UserDto?> GetByIdAsync(string id)
+    {
+        // Query the ById GSI for item where attribute Id == id
+        var resp = await _ddb.QueryAsync(new QueryRequest
+        {
+            TableName = _tableName,
+            IndexName = "ById",
+            KeyConditionExpression = "Id = :id",
+            ExpressionAttributeValues = new Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue>
+            {
+                [":id"] = new() { S = id }
+            },
+            Limit = 1
+        });
+
+        if (resp.Items == null || resp.Items.Count == 0) return null;
+
+        var item = resp.Items[0];
+        var username = item.TryGetValue("PK", out var pk) ? (pk.S ?? string.Empty).Replace("USER#", string.Empty) : string.Empty;
+        var email = item.TryGetValue("Email", out var e) ? e.S : string.Empty;
+        var hash = item.TryGetValue("PasswordHash", out var p) ? p.S : string.Empty;
+        var avatar = item.TryGetValue("AvatarUrl", out var a) ? a.S : null;
+        var credits = item.TryGetValue("Credits", out var c) && int.TryParse(c.N, out var cv) ? cv : 0;
+        var type = item.TryGetValue("Type", out var t) ? t.S : "User";
+
+        return new UserDto
+        {
+            Id = id,
+            Username = username ?? string.Empty,
+            Email = email ?? string.Empty,
+            PasswordHash = hash ?? string.Empty,
+            AvatarUrl = avatar,
+            Credits = credits,
+            Type = type ?? "User"
+        };
+    }
+
+    public async Task<bool> UpdateAvatarUrlAsync(string id, string? avatarUrl)
+    {
+        // Use the ById GSI to find the item by Id
+        var resp = await _ddb.QueryAsync(new QueryRequest
+        {
+            TableName = _tableName,
+            IndexName = "ById",
+            KeyConditionExpression = "Id = :id",
+            ExpressionAttributeValues = new Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue>
+            {
+                [":id"] = new() { S = id }
+            },
+            Limit = 1
+        });
+
+        if (resp.Items == null || resp.Items.Count == 0) return false;
+
+        var item = resp.Items[0];
+        var pkRaw = item.TryGetValue("PK", out var pk) ? pk.S ?? string.Empty : string.Empty;
+        var username = pkRaw.Replace("USER#", string.Empty);
+
+        var key = new Dictionary<string, Amazon.DynamoDBv2.Model.AttributeValue>
+        {
+            ["PK"] = new() { S = Pk(username) },
+            ["SK"] = new() { S = MetaSk() }
+        };
+
+        if (avatarUrl is null)
+        {
+            await _ddb.UpdateItemAsync(new UpdateItemRequest
+            {
+                TableName = _tableName,
+                Key = key,
+                UpdateExpression = "REMOVE AvatarUrl"
+            });
+        }
+        else
+        {
+            await _ddb.UpdateItemAsync(new UpdateItemRequest
+            {
+                TableName = _tableName,
+                Key = key,
+                UpdateExpression = "SET AvatarUrl = :a",
+                ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                {
+                    [":a"] = new() { S = avatarUrl }
+                }
+            });
+        }
+
+        return true;
+    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Sub2SubApi.Application.Models;
 using Sub2SubApi.Data;
@@ -60,14 +61,33 @@ public sealed class RiotService : IRiotService
 
     public async Task SyncAllAsync(string userId)
     {
-        await SyncRankedAsync(userId);
-        await SyncChampionMasteryAsync(userId);
-        await SyncMatchesAsync(userId);
+        // Run each sync independently so one failing sync doesn't fail the entire operation.
+        try { await SyncRankedAsync(userId); } catch { /* swallow to remain tolerant */ }
+        try { await SyncChampionMasteryAsync(userId); } catch { /* swallow to remain tolerant */ }
+        try { await SyncMatchesAsync(userId); } catch { /* swallow to remain tolerant */ }
     }
 
     public Task<RiotProfileDto?> GetProfileAsync(string userId, int recentMatches = 10)
     {
         return _userRepo.GetRiotProfileAsync(userId);
+    }
+
+    public async Task<IEnumerable<UserRankedStatsDto>> GetRankedAsync(string userId)
+    {
+        var list = await _userRepo.GetRankedEntriesAsync(userId);
+        return list;
+    }
+
+    public async Task<IEnumerable<UserChampionMasteryDto>> GetChampionMasteryAsync(string userId, int topN = 0)
+    {
+        var list = await _userRepo.GetChampionMasteriesAsync(userId);
+        if (topN > 0) return list.Take(topN);
+        return list;
+    }
+
+    public Task<IEnumerable<UserMatchStatsDto>> GetMatchesAsync(string userId, int count = 20)
+    {
+        return _matchRepo.ListUserMatchStatsAsync(userId, count).ContinueWith(t => (IEnumerable<UserMatchStatsDto>)t.Result);
     }
 
     private async Task SyncRankedInternalAsync(string userId)

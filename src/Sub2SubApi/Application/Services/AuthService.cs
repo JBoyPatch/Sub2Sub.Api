@@ -33,4 +33,14 @@ public sealed class AuthService : IAuthService
         if (!string.Equals(user.PasswordHash, passwordHash, StringComparison.Ordinal)) return null;
         return user;
     }
+
+    public Task<UserDto?> GetUserByIdAsync(string id)
+    {
+        return _repo.GetByIdAsync(id);
+    }
+
+    public Task<bool> UpdateAvatarUrlAsync(string id, string? avatarUrl)
+    {
+        return _repo.UpdateAvatarUrlAsync(id, avatarUrl);
+    }
 }
